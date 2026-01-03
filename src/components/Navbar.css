@@ -1,0 +1,213 @@
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--color-border);
+    height: 70px;
+    display: flex;
+    align-items: center;
+}
+
+[data-theme="dark"] .navbar {
+    background-color: rgba(17, 24, 39, 0.95);
+}
+
+.navbar-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.navbar-logo {
+    font-family: var(--font-family-serif, serif);
+    font-weight: 700;
+    font-size: var(--font-size-xl);
+    color: var(--color-text-primary);
+    display: flex;
+    align-items: baseline;
+    letter-spacing: -0.5px;
+}
+
+.navbar-logo .logo-accent {
+    color: var(--color-accent);
+    margin-right: 4px;
+}
+
+.navbar-dot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--color-accent);
+    border-radius: 50%;
+    margin-left: 4px;
+}
+
+.navbar-links {
+    display: flex;
+    list-style: none;
+    gap: var(--space-xl);
+    margin: 0;
+    padding: 0;
+}
+
+.navbar-links a {
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    transition: color 0.2s ease;
+    position: relative;
+    text-decoration: none;
+}
+
+.navbar-links a:hover,
+.navbar-links a.active {
+    color: var(--color-text-primary);
+}
+
+.navbar-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: var(--color-accent);
+    transition: width 0.2s ease;
+}
+
+.navbar-links a:hover::after,
+.navbar-links a.active::after {
+    width: 100%;
+}
+
+.navbar-actions {
+    display: flex;
+    gap: var(--space-sm);
+    align-items: center;
+}
+
+/* Enhanced Search Box */
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-right: var(--space-xs);
+}
+
+.search-box input {
+    background-color: var(--color-bg);
+    border: 1px solid transparent;
+    border-radius: 999px;
+    /* Pill shape */
+    padding: 8px 16px 8px 36px;
+    /* Left padding for icon */
+    font-size: 0.9rem;
+    width: 180px;
+    transition: all 0.2s ease;
+    color: var(--color-text-primary);
+}
+
+.search-box input:focus {
+    width: 220px;
+    outline: none;
+    background-color: var(--color-surface);
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    color: var(--color-text-secondary);
+    pointer-events: none;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.icon-btn:hover {
+    background-color: var(--color-bg);
+    color: var(--color-text-primary);
+}
+
+.user-btn {
+    border: 1px solid var(--color-border);
+}
+
+.mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--color-text-primary);
+    cursor: pointer;
+}
+
+.mobile-menu {
+    position: fixed;
+    top: 70px;
+    left: 0;
+    width: 100%;
+    background-color: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-md);
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    z-index: 998;
+    box-shadow: var(--shadow-lg);
+}
+
+.mobile-menu.open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.mobile-links {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    text-align: center;
+    padding: 0;
+}
+
+.mobile-links a {
+    display: block;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    padding: var(--space-sm);
+    text-decoration: none;
+}
+
+@media (max-width: 900px) {
+    .navbar-links {
+        display: none;
+    }
+
+    .mobile-menu-btn {
+        display: flex;
+    }
+
+    .search-box input {
+        width: 140px;
+    }
+
+    .search-box input:focus {
+        width: 180px;
+    }
+}
