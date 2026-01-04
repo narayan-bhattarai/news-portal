@@ -6,6 +6,7 @@ export interface Article {
     author: string;
     timeAgo: string;
     imageUrl: string;
+    content?: string;
     isTrending?: boolean;
 }
 

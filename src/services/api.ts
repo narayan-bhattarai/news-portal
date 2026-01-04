@@ -64,6 +64,19 @@ export const api = {
         return response.json();
     },
 
+    updateArticle: async (id: string, article: Omit<Article, 'timeAgo'>): Promise<void> => {
+        const token = localStorage.getItem('authToken');
+        const response = await fetch(`${API_BASE_URL}/articles/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(article)
+        });
+        if (!response.ok) throw new Error('Failed to update article');
+    },
+
     deleteArticle: async (id: string): Promise<void> => {
         const token = localStorage.getItem('authToken');
         const response = await fetch(`${API_BASE_URL}/articles/${id}`, {

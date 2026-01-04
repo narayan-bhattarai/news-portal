@@ -13,10 +13,12 @@ export default function Admin() {
         author: 'Admin',
         imageUrl: '/images/tech-ev.png', // Default
         excerpt: '',
+        content: '',
         isTrending: false
     });
     const [uploading, setUploading] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [editingId, setEditingId] = useState<string | null>(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -32,7 +34,36 @@ export default function Admin() {
         navigate('/login');
     };
 
+    const handleEdit = (article: Article) => {
+        setEditingId(article.id);
+        setFormData({
+            title: article.title,
+            category: article.category,
+            author: article.author,
+            imageUrl: article.imageUrl,
+            excerpt: article.excerpt,
+            content: article.content || '',
+            isTrending: article.isTrending || false
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleCancelEdit = () => {
+        setEditingId(null);
+        setFormData({
+            title: '',
+            category: 'Technology',
+            author: 'Admin',
+            imageUrl: '/images/tech-ev.png', // Default
+            excerpt: '',
+            content: '',
+            isTrending: false
+        });
+        setSelectedFile(null);
+    };
+
     const handleDelete = async (id: string) => {
+        // ... (unchanged)
         if (confirm('Are you sure you want to delete this article?')) {
             try {
                 await api.deleteArticle(id);
@@ -45,6 +76,7 @@ export default function Admin() {
         }
     };
 
+    // ... (handleFileChange, handleSubmit unchanged in logic, just using expanded formData)
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             setSelectedFile(e.target.files[0]);
@@ -63,16 +95,19 @@ export default function Admin() {
                 setUploading(false);
             }
 
-            await api.createArticle({ ...formData, imageUrl: finalImageUrl });
+            if (editingId) {
+                await api.updateArticle(editingId, { ...formData, id: editingId, imageUrl: finalImageUrl });
+                alert('Article updated successfully!');
+            } else {
+                await api.createArticle({ ...formData, imageUrl: finalImageUrl });
+                alert('Article published successfully!');
+            }
 
-            setFormData({ ...formData, title: '', excerpt: '', imageUrl: '/images/tech-ev.png' }); // Reset form
-            setSelectedFile(null);
+            handleCancelEdit(); // Reset form
             loadArticles();
-            alert('Article published successfully!');
         } catch (err) {
             setUploading(false);
-            alert('Failed to publish. ' + err);
-            // api.logout(); // Don't logout immediately on upload fail, might be just a large file
+            alert('Failed to save. ' + err);
         }
     };
 
@@ -88,10 +123,20 @@ export default function Admin() {
                 </div>
 
                 <div className="admin-layout">
-                    {/* Create Form */}
+                    {/* Create/Edit Form */}
                     <div className="admin-panel">
-                        <h2>Add New Article</h2>
+                        {/* Title Header */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '2px solid var(--color-border)', paddingBottom: '0.5rem' }}>
+                            <h2 style={{ margin: 0, border: 'none', padding: 0 }}>{editingId ? 'Edit Article' : 'Add New Article'}</h2>
+                            {editingId && (
+                                <button onClick={handleCancelEdit} style={{ fontSize: '0.8rem', padding: '4px 8px', background: '#e5e7eb', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                                    Cancel Edit
+                                </button>
+                            )}
+                        </div>
+
                         <form onSubmit={handleSubmit} className="admin-form">
+                            {/* ... Title, Category, Image ... */}
                             <label>
                                 Title
                                 <input
@@ -141,6 +186,17 @@ export default function Admin() {
                                     value={formData.excerpt}
                                     required
                                     onChange={e => setFormData({ ...formData, excerpt: e.target.value })}
+                                    style={{ height: '80px' }}
+                                />
+                            </label>
+
+                            <label>
+                                Full Content
+                                <textarea
+                                    value={formData.content}
+                                    onChange={e => setFormData({ ...formData, content: e.target.value })}
+                                    style={{ height: '200px' }}
+                                    placeholder="Write the full article content here..."
                                 />
                             </label>
 
@@ -159,7 +215,7 @@ export default function Admin() {
                                 disabled={uploading}
                                 style={{ background: 'var(--color-accent)', color: 'white', opacity: uploading ? 0.7 : 1 }}
                             >
-                                {uploading ? 'Uploading...' : 'Publish Article'}
+                                {uploading ? 'Uploading...' : (editingId ? 'Update Article' : 'Publish Article')}
                             </button>
                         </form>
                     </div>
@@ -181,12 +237,21 @@ export default function Admin() {
                                         <td>{article.title}</td>
                                         <td><span className="sc-tag">{article.category}</span></td>
                                         <td>
-                                            <button
-                                                onClick={() => handleDelete(article.id)}
-                                                className="delete-btn"
-                                            >
-                                                Delete
-                                            </button>
+                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                <button
+                                                    onClick={() => handleEdit(article)}
+                                                    className="delete-btn"
+                                                    style={{ background: '#dbeafe', color: '#2563eb' }}
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(article.id)}
+                                                    className="delete-btn"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
