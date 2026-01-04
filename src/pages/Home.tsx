@@ -8,20 +8,26 @@ import type { Article } from '../data/mockData';
 import { api } from '../services/api';
 import '../styles/Home.css';
 
+import { useSearchParams } from 'react-router-dom';
+
 export default function Home() {
     const [articles, setArticles] = useState<Article[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [searchParams] = useSearchParams();
+    const searchQuery = searchParams.get('search') || '';
+    const categoryQuery = searchParams.get('category') || '';
 
     useEffect(() => {
-        api.getArticles()
+        setLoading(true);
+        api.getArticles(searchQuery, categoryQuery)
             .then(data => setArticles(data))
             .catch(err => {
                 console.error(err);
                 setError(`Failed to load news: ${err.message}. Is the backend running?`);
             })
             .finally(() => setLoading(false));
-    }, []);
+    }, [searchQuery, categoryQuery]);
 
     return (
         <div className="home-page">
@@ -30,7 +36,11 @@ export default function Home() {
 
             <main className="container home-layout">
                 <section className="news-feed">
-                    <h2 className="section-header">Latest News</h2>
+                    <h2 className="section-header">
+                        {searchQuery ? `Search Results: "${searchQuery}"` :
+                            categoryQuery ? `${categoryQuery} News` :
+                                'Latest News'}
+                    </h2>
                     <div className="news-grid">
                         {error ? (
                             <div style={{ padding: '2rem', background: '#fee2e2', color: '#dc2626', borderRadius: '8px' }}>

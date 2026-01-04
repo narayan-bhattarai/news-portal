@@ -1,96 +1,367 @@
-.admin-title {
-    margin-bottom: 2rem;
-    font-family: var(--font-family-serif);
+:root {
+    --sidebar-width: 260px;
+    --header-height: 70px;
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --bg-light: #f3f4f6;
+    --surface-white: #ffffff;
+    --text-dark: #1f2937;
+    --text-muted: #6b7280;
+    --border-color: #e5e7eb;
 }
 
 .admin-layout {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 2rem;
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    font-family: 'Inter', system-ui, sans-serif;
 }
 
-.admin-panel {
-    background: white;
+/* --- Sidebar --- */
+.admin-sidebar {
+    width: var(--sidebar-width);
+    background: var(--surface-white);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
     padding: 1.5rem;
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
+    position: fixed;
+    height: 100vh;
 }
 
-.admin-panel h2 {
-    margin-bottom: 1.5rem;
-    font-size: 1.25rem;
-    border-bottom: 2px solid var(--color-border);
-    padding-bottom: 0.5rem;
+.admin-logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 2.5rem;
+    cursor: pointer;
+    color: var(--text-dark);
 }
 
-.admin-form {
+.admin-logo span {
+    color: var(--primary-color);
+}
+
+.sidebar-nav {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.5rem;
+    flex: 1;
 }
 
-.admin-form label {
+.sidebar-nav button {
     display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    font-size: 0.875rem;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
     font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
 }
 
-.admin-form input,
-.admin-form select,
-.admin-form textarea {
-    padding: 0.5rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    font-family: inherit;
+.sidebar-nav button:hover {
+    background: #eff6ff;
+    color: var(--primary-color);
 }
 
-.admin-form textarea {
-    min-height: 100px;
+.sidebar-nav button.active {
+    background: #eff6ff;
+    color: var(--primary-color);
+    font-weight: 600;
 }
 
-.checkbox-label {
-    flex-direction: row !important;
+.sidebar-footer {
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+}
+
+.logout-btn {
+    display: flex;
     align-items: center;
     gap: 0.5rem;
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    font-weight: 500;
+    width: 100%;
+    padding: 0.5rem;
 }
 
-.admin-table {
+.logout-btn:hover {
+    background: #fef2f2;
+    border-radius: 6px;
+}
+
+/* --- Main Content --- */
+.admin-main {
+    margin-left: var(--sidebar-width);
+    flex: 1;
+    padding: 2rem;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.admin-header h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+/* --- Cards & Stats --- */
+.content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.content-card {
+    background: var(--surface-white);
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    margin-bottom: 2rem;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+/* --- Tables --- */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.modern-table {
     width: 100%;
     border-collapse: collapse;
 }
 
-.admin-table th,
-.admin-table td {
+.modern-table th {
     text-align: left;
-    padding: 0.75rem;
-    border-bottom: 1px solid var(--color-border);
+    padding: 1rem;
+    border-bottom: 2px solid var(--border-color);
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
-.sc-tag {
-    font-size: 0.75rem;
-    background: #eee;
-    padding: 2px 6px;
-    border-radius: 4px;
+.modern-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
 }
 
-.delete-btn {
-    background: #fee2e2;
-    color: #dc2626;
-    border: none;
+.badge {
+    background: #e0f2fe;
+    color: #0369a1;
     padding: 4px 8px;
-    border-radius: 4px;
+    border-radius: 99px;
     font-size: 0.75rem;
     font-weight: 600;
 }
 
-.delete-btn:hover {
-    background: #fecaca;
+.status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #9ca3af;
+    margin-right: 6px;
 }
 
-@media (max-width: 768px) {
-    .admin-layout {
-        grid-template-columns: 1fr;
-    }
+.status-dot.trending {
+    background: #ef4444;
+    /* Red for trending hot */
+}
+
+/* --- Forms --- */
+.modern-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-row {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.form-group input:not([type="checkbox"]),
+.form-group select,
+.form-group textarea {
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.inline-form {
+    flex-direction: row;
+    align-items: center;
+}
+
+.file-input-wrapper {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.file-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--text-muted);
+}
+
+.file-label:hover {
+    background: #f1f5f9;
+}
+
+.checkbox-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    padding: 0.75rem 0;
+    /* Align with inputs */
+    height: 100%;
+}
+
+.checkbox-option input[type="checkbox"] {
+    width: 1.25rem;
+    height: 1.25rem;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+/* --- Buttons --- */
+.primary-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background 0.2s;
+}
+
+.primary-btn:hover {
+    background: var(--primary-hover);
+}
+
+.secondary-btn {
+    background: white;
+    border: 1px solid var(--border-color);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    padding: 6px;
+    cursor: pointer;
+    color: var(--text-muted);
+    border-radius: 4px;
+}
+
+.icon-btn:hover {
+    background: #f3f4f6;
+    color: var(--text-dark);
+}
+
+.icon-btn.delete:hover {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+/* --- Specifics --- */
+.category-list {
+    list-style: none;
+    padding: 0;
+}
+
+.category-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+}
+
+.code-editor {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    background: #1e293b;
+    color: #e2e8f0;
 }

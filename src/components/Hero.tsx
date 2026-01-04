@@ -10,7 +10,6 @@ interface HeroProps {
 }
 
 export default function Hero({
-    category = "Technology",
     title = "The Future of AI: How Machine Learning is Transforming Industries",
     summary = "From healthcare to finance, artificial intelligence is reshaping the global landscape. Discover the latest breakthroughs and what they mean for the future of work.",
     imageUrl = "/images/hero-ai.jpg"

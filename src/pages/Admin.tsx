@@ -2,16 +2,37 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import type { Article } from '../data/mockData';
-import Navbar from '../components/Navbar';
+import {
+    LayoutDashboard,
+    FileText,
+    List,
+    Layers,
+    LogOut,
+    Settings,
+    Plus,
+    Edit,
+    Trash2,
+    Image as ImageIcon,
+    Save
+} from 'lucide-react';
 import './Admin.css';
 
 export default function Admin() {
+    const navigate = useNavigate();
+    const handleLogout = () => {
+        api.logout();
+        navigate('/login');
+    };
+
+    const [activeTab, setActiveTab] = useState<'articles' | 'categories' | 'pages'>('articles');
+
+    // --- Article State ---
     const [articles, setArticles] = useState<Article[]>([]);
-    const [formData, setFormData] = useState({
+    const [articleForm, setArticleForm] = useState({
         title: '',
         category: 'Technology',
         author: 'Admin',
-        imageUrl: '/images/tech-ev.png', // Default
+        imageUrl: '',
         excerpt: '',
         content: '',
         isTrending: false
@@ -19,247 +40,351 @@ export default function Admin() {
     const [uploading, setUploading] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [editingId, setEditingId] = useState<string | null>(null);
-    const navigate = useNavigate();
+    const [showArticleForm, setShowArticleForm] = useState(false);
 
+    // --- Category State ---
+    const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+    const [newCategoryName, setNewCategoryName] = useState('');
+
+    // --- Page State ---
+    const [pageSlug, setPageSlug] = useState('about');
+    const [pageContent, setPageContent] = useState({ title: '', body: '' });
+
+    // --- Effects ---
     useEffect(() => {
-        loadArticles();
-    }, []);
+        if (activeTab === 'articles') loadArticles();
+        if (activeTab === 'categories') loadCategories();
+        if (activeTab === 'pages') loadPage(pageSlug);
+        loadCategories(); // Always load categories for the dropdown
+    }, [activeTab, pageSlug]);
 
-    const loadArticles = () => {
-        api.getArticles().then(setArticles);
+    const loadArticles = () => api.getArticles().then(setArticles);
+
+    // ... (Keeping existing handlers layout slightly cleaner)
+    const handleArticleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) setSelectedFile(e.target.files[0]);
     };
 
-    const handleLogout = () => {
-        api.logout();
-        navigate('/login');
+    const handleArticleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            let finalImageUrl = articleForm.imageUrl || '/images/default-news.png';
+            if (selectedFile) {
+                setUploading(true);
+                finalImageUrl = await api.uploadImage(selectedFile);
+                setUploading(false);
+            }
+
+            if (editingId) {
+                await api.updateArticle(editingId, { ...articleForm, id: editingId, imageUrl: finalImageUrl });
+                alert('Article updated successfully!');
+            } else {
+                await api.createArticle({ ...articleForm, imageUrl: finalImageUrl });
+                alert('Article published successfully!');
+            }
+            handleCancelEdit();
+            loadArticles();
+            setShowArticleForm(false);
+        } catch (err) {
+            setUploading(false);
+            alert('Failed to save article.');
+        }
     };
 
-    const handleEdit = (article: Article) => {
+    const handleEditArticle = (article: Article) => {
         setEditingId(article.id);
-        setFormData({
+        setArticleForm({
             title: article.title,
             category: article.category,
             author: article.author,
             imageUrl: article.imageUrl,
             excerpt: article.excerpt,
             content: article.content || '',
-            isTrending: article.isTrending || false
+            isTrending: article.isTrending
         });
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setShowArticleForm(true);
     };
 
     const handleCancelEdit = () => {
         setEditingId(null);
-        setFormData({
-            title: '',
-            category: 'Technology',
-            author: 'Admin',
-            imageUrl: '/images/tech-ev.png', // Default
-            excerpt: '',
-            content: '',
-            isTrending: false
+        setArticleForm({
+            title: '', category: 'Technology', author: 'Admin', imageUrl: '', excerpt: '', content: '', isTrending: false
         });
         setSelectedFile(null);
+        setShowArticleForm(false);
     };
 
-    const handleDelete = async (id: string) => {
-        // ... (unchanged)
-        if (confirm('Are you sure you want to delete this article?')) {
+    const handleDeleteArticle = async (id: string) => {
+        if (confirm('Delete this article?')) {
             try {
                 await api.deleteArticle(id);
                 loadArticles();
-            } catch (err) {
-                alert('Failed to delete. You might need to login again.');
-                api.logout();
-                navigate('/login');
-            }
+            } catch { alert('Failed to delete.'); }
         }
     };
 
-    // ... (handleFileChange, handleSubmit unchanged in logic, just using expanded formData)
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            setSelectedFile(e.target.files[0]);
-        }
+    const loadCategories = () => {
+        api.getCategories().then(setCategories).catch(console.error);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleAddCategory = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            let finalImageUrl = formData.imageUrl;
-
-            if (selectedFile) {
-                setUploading(true);
-                const result = await api.uploadImage(selectedFile);
-                finalImageUrl = result.url;
-                setUploading(false);
-            }
-
-            if (editingId) {
-                await api.updateArticle(editingId, { ...formData, id: editingId, imageUrl: finalImageUrl });
-                alert('Article updated successfully!');
+            const res = await fetch('http://localhost:5200/api/categories', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('authToken')}` },
+                body: JSON.stringify({ name: newCategoryName })
+            });
+            if (res.ok) {
+                setNewCategoryName('');
+                loadCategories();
             } else {
-                await api.createArticle({ ...formData, imageUrl: finalImageUrl });
-                alert('Article published successfully!');
+                alert('Failed to add category');
             }
+        } catch (e) { console.error(e); }
+    };
 
-            handleCancelEdit(); // Reset form
-            loadArticles();
-        } catch (err) {
-            setUploading(false);
-            alert('Failed to save. ' + err);
+    const handleDeleteCategory = async (id: number) => {
+        if (confirm('Delete category?')) {
+            await fetch(`http://localhost:5200/api/categories/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+            });
+            loadCategories();
         }
+    };
+
+    const loadPage = (slug: string) => {
+        api.getPage(slug)
+            .then(data => setPageContent({ title: data.title, body: data.body }))
+            .catch(() => setPageContent({ title: '', body: '' }));
+    };
+
+    const handleSavePage = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            await api.updatePage(pageSlug, pageContent);
+            alert('Page content updated!');
+        } catch { alert('Failed to update page.'); }
     };
 
     return (
-        <div className="admin-page">
-            <Navbar />
-            <div className="container" style={{ marginTop: '2rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                    <h1 className="admin-title" style={{ marginBottom: 0 }}>Admin Dashboard</h1>
-                    <button onClick={handleLogout} style={{ padding: '0.5rem 1rem', background: '#e5e7eb', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                        Logout
+        <div className="admin-layout">
+            {/* Sidebar */}
+            <aside className="admin-sidebar">
+                <div className="admin-logo" onClick={() => navigate('/')}>
+                    <span>खबर</span> मञ्च
+                </div>
+
+                <nav className="sidebar-nav">
+                    <button
+                        className={activeTab === 'articles' ? 'active' : ''}
+                        onClick={() => setActiveTab('articles')}
+                    >
+                        <LayoutDashboard size={20} /> Dashboard
+                    </button>
+                    <button
+                        className={activeTab === 'categories' ? 'active' : ''}
+                        onClick={() => setActiveTab('categories')}
+                    >
+                        <List size={20} /> Categories
+                    </button>
+                    <button
+                        className={activeTab === 'pages' ? 'active' : ''}
+                        onClick={() => setActiveTab('pages')}
+                    >
+                        <Layers size={20} /> Pages
+                    </button>
+                </nav>
+
+                <div className="sidebar-footer">
+                    <button onClick={handleLogout} className="logout-btn">
+                        <LogOut size={20} /> Sign Out
                     </button>
                 </div>
+            </aside>
 
-                <div className="admin-layout">
-                    {/* Create/Edit Form */}
-                    <div className="admin-panel">
-                        {/* Title Header */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '2px solid var(--color-border)', paddingBottom: '0.5rem' }}>
-                            <h2 style={{ margin: 0, border: 'none', padding: 0 }}>{editingId ? 'Edit Article' : 'Add New Article'}</h2>
-                            {editingId && (
-                                <button onClick={handleCancelEdit} style={{ fontSize: '0.8rem', padding: '4px 8px', background: '#e5e7eb', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                                    Cancel Edit
-                                </button>
+            {/* Main Content */}
+            <main className="admin-main">
+                <header className="admin-header">
+                    <h2>
+                        {activeTab === 'articles' && 'Article Management'}
+                        {activeTab === 'categories' && 'Category Management'}
+                        {activeTab === 'pages' && 'Page Content'}
+                    </h2>
+                    <div className="user-profile">
+                        <div className="avatar">A</div>
+                        <span>Admin User</span>
+                    </div>
+                </header>
+
+                <div className="admin-content">
+                    {/* --- ARTICLES TAB --- */}
+                    {activeTab === 'articles' && (
+                        <>
+                            {!showArticleForm ? (
+                                <div className="content-card">
+                                    <div className="card-header">
+                                        <h3>All Articles</h3>
+                                        <button className="primary-btn" onClick={() => setShowArticleForm(true)}>
+                                            <Plus size={18} /> New Article
+                                        </button>
+                                    </div>
+                                    <div className="table-responsive">
+                                        <table className="modern-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Title</th>
+                                                    <th>Category</th>
+                                                    <th>Author</th>
+                                                    <th>Status</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {articles.map(a => (
+                                                    <tr key={a.id}>
+                                                        <td>{a.title}</td>
+                                                        <td><span className="badge">{a.category}</span></td>
+                                                        <td>{a.author}</td>
+                                                        <td><span className={`status-dot ${a.isTrending ? 'trending' : ''}`}></span> {a.isTrending ? 'Trending' : 'Standard'}</td>
+                                                        <td>
+                                                            <div className="action-buttons">
+                                                                <button onClick={() => handleEditArticle(a)} className="icon-btn edit" title="Edit"><Edit size={18} /></button>
+                                                                <button onClick={() => handleDeleteArticle(a.id)} className="icon-btn delete" title="Delete"><Trash2 size={18} /></button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                                {articles.length === 0 && <tr><td colSpan={5} className="empty-state">No articles found.</td></tr>}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="content-card">
+                                    <div className="card-header">
+                                        <h3>{editingId ? 'Edit Article' : 'Create New Article'}</h3>
+                                        <button className="secondary-btn" onClick={handleCancelEdit}>Cancel</button>
+                                    </div>
+                                    <form onSubmit={handleArticleSubmit} className="modern-form">
+                                        <div className="form-row">
+                                            <div className="form-group">
+                                                <label>Title</label>
+                                                <input value={articleForm.title} onChange={e => setArticleForm({ ...articleForm, title: e.target.value })} required placeholder="Enter article title" />
+                                            </div>
+                                            <div className="form-group">
+                                                <label>Category</label>
+                                                <select value={articleForm.category} onChange={e => setArticleForm({ ...articleForm, category: e.target.value })}>
+                                                    {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                                                    {categories.length === 0 && <option>Technology</option>}
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label>Excerpt</label>
+                                            <textarea value={articleForm.excerpt} onChange={e => setArticleForm({ ...articleForm, excerpt: e.target.value })} rows={3} placeholder="Short summary..." required />
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label>Full Content (HTML Supported)</label>
+                                            <textarea value={articleForm.content} onChange={e => setArticleForm({ ...articleForm, content: e.target.value })} rows={10} placeholder="Article body..." />
+                                        </div>
+
+                                        <div className="form-row">
+                                            <div className="form-group file-group">
+                                                <label>Featured Image</label>
+                                                <div className="file-input-wrapper">
+                                                    <input type="file" id="file-upload" onChange={handleArticleFileChange} hidden />
+                                                    <label htmlFor="file-upload" className="file-label">
+                                                        <ImageIcon size={18} /> {selectedFile ? selectedFile.name : "Choose File"}
+                                                    </label>
+                                                    <input type="text" placeholder="Or Image URL..." value={articleForm.imageUrl} onChange={e => setArticleForm({ ...articleForm, imageUrl: e.target.value })} />
+                                                </div>
+                                            </div>
+                                            <div className="form-group checkbox-group">
+                                                <label>Status</label>
+                                                <label className="checkbox-option">
+                                                    <input type="checkbox" checked={articleForm.isTrending} onChange={e => setArticleForm({ ...articleForm, isTrending: e.target.checked })} />
+                                                    <span>Mark as Trending News</span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div className="form-actions">
+                                            <button type="submit" className="primary-btn" disabled={uploading}>
+                                                {uploading ? 'Processing...' : <><Save size={18} /> {editingId ? 'Update Article' : 'Publish Article'}</>}
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
                             )}
-                        </div>
+                        </>
+                    )}
 
-                        <form onSubmit={handleSubmit} className="admin-form">
-                            {/* ... Title, Category, Image ... */}
-                            <label>
-                                Title
-                                <input
-                                    type="text"
-                                    value={formData.title}
-                                    required
-                                    onChange={e => setFormData({ ...formData, title: e.target.value })}
-                                />
-                            </label>
-
-                            <label>
-                                Category
-                                <select
-                                    value={formData.category}
-                                    onChange={e => setFormData({ ...formData, category: e.target.value })}
-                                >
-                                    <option>Technology</option>
-                                    <option>Business</option>
-                                    <option>World</option>
-                                    <option>Sports</option>
-                                    <option>Entertainment</option>
-                                </select>
-                            </label>
-
-                            <label>
-                                Article Image
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {/* --- CATEGORIES TAB --- */}
+                    {activeTab === 'categories' && (
+                        <div className="content-grid">
+                            <div className="content-card">
+                                <h3>Add New Category</h3>
+                                <form onSubmit={handleAddCategory} className="modern-form inline-form">
                                     <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleFileChange}
-                                        style={{ border: 'none', padding: 0 }}
+                                        value={newCategoryName}
+                                        onChange={e => setNewCategoryName(e.target.value)}
+                                        placeholder="Category Name"
+                                        required
                                     />
-                                    <small style={{ color: '#6b7280' }}>Or use external URL (if no file selected):</small>
-                                    <input
-                                        type="text"
-                                        value={formData.imageUrl}
-                                        onChange={e => setFormData({ ...formData, imageUrl: e.target.value })}
-                                        placeholder="https://..."
+                                    <button type="submit" className="primary-btn"><Plus size={18} /> Add</button>
+                                </form>
+                            </div>
+                            <div className="content-card">
+                                <h3>Existing Categories</h3>
+                                <ul className="category-list">
+                                    {categories.map(c => (
+                                        <li key={c.id}>
+                                            <span>{c.name}</span>
+                                            <button onClick={() => handleDeleteCategory(c.id)} className="icon-btn delete"><Trash2 size={16} /></button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* --- PAGES TAB --- */}
+                    {activeTab === 'pages' && (
+                        <div className="content-card">
+                            <div className="card-header">
+                                <h3>Edit Page Content</h3>
+                                <div className="select-wrapper">
+                                    <select value={pageSlug} onChange={e => setPageSlug(e.target.value)} className="page-select">
+                                        <option value="about">About Us</option>
+                                        <option value="careers">Careers</option>
+                                        <option value="contact-info">Contact</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <form onSubmit={handleSavePage} className="modern-form">
+                                <div className="form-group">
+                                    <label>Page Title</label>
+                                    <input value={pageContent.title} onChange={e => setPageContent({ ...pageContent, title: e.target.value })} />
+                                </div>
+                                <div className="form-group">
+                                    <label>Body Content</label>
+                                    <textarea
+                                        value={pageContent.body}
+                                        onChange={e => setPageContent({ ...pageContent, body: e.target.value })}
+                                        rows={15}
+                                        className="code-editor"
                                     />
                                 </div>
-                            </label>
-
-                            <label>
-                                Excerpt
-                                <textarea
-                                    value={formData.excerpt}
-                                    required
-                                    onChange={e => setFormData({ ...formData, excerpt: e.target.value })}
-                                    style={{ height: '80px' }}
-                                />
-                            </label>
-
-                            <label>
-                                Full Content
-                                <textarea
-                                    value={formData.content}
-                                    onChange={e => setFormData({ ...formData, content: e.target.value })}
-                                    style={{ height: '200px' }}
-                                    placeholder="Write the full article content here..."
-                                />
-                            </label>
-
-                            <label className="checkbox-label">
-                                <input
-                                    type="checkbox"
-                                    checked={formData.isTrending}
-                                    onChange={e => setFormData({ ...formData, isTrending: e.target.checked })}
-                                />
-                                Is Trending?
-                            </label>
-
-                            <button
-                                type="submit"
-                                className="hero-btn"
-                                disabled={uploading}
-                                style={{ background: 'var(--color-accent)', color: 'white', opacity: uploading ? 0.7 : 1 }}
-                            >
-                                {uploading ? 'Uploading...' : (editingId ? 'Update Article' : 'Publish Article')}
-                            </button>
-                        </form>
-                    </div>
-
-                    {/* List */}
-                    <div className="admin-panel">
-                        <h2>Manage Articles</h2>
-                        <table className="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>Title</th>
-                                    <th>Category</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {articles.map(article => (
-                                    <tr key={article.id}>
-                                        <td>{article.title}</td>
-                                        <td><span className="sc-tag">{article.category}</span></td>
-                                        <td>
-                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                                <button
-                                                    onClick={() => handleEdit(article)}
-                                                    className="delete-btn"
-                                                    style={{ background: '#dbeafe', color: '#2563eb' }}
-                                                >
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(article.id)}
-                                                    className="delete-btn"
-                                                >
-                                                    Delete
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                <button type="submit" className="primary-btn"><Save size={18} /> Save Changes</button>
+                            </form>
+                        </div>
+                    )}
                 </div>
-            </div>
+            </main>
         </div>
     );
 }

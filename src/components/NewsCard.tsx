@@ -1,4 +1,4 @@
-import { Clock, Tag } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import type { Article } from '../data/mockData';
 import { Link } from 'react-router-dom';
 import './NewsCard.css';

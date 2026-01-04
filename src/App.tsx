@@ -3,6 +3,9 @@ import Home from './pages/Home';
 import Admin from './pages/Admin';
 import Login from './pages/Login';
 import ArticleDetail from './pages/ArticleDetail';
+import About from './pages/About';
+import Careers from './pages/Careers';
+import Contact from './pages/Contact';
 import { api } from './services/api';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -19,6 +22,9 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/article/:id" element={<ArticleDetail />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/careers" element={<Careers />} />
+        <Route path="/contact" element={<Contact />} />
         <Route
           path="/admin"
           element={
