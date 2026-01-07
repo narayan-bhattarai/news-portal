@@ -1,22 +1,55 @@
-import { Search, User, Menu, X, Sun, Moon } from 'lucide-react';
+
+import NepaliDate from 'nepali-date-converter';
+import { Search, User, Menu, X, Sun, Moon, Home } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { api } from '../services/api';
+import { config } from '../config';
 import './Navbar.css';
 
-const CATEGORIES = ['World', 'Business', 'Technology', 'Sports', 'Entertainment']; // Fallback
+const CATEGORIES = ['World', 'Business', 'Technology', 'Sports', 'Entertainment', 'Health'];
 
 interface NavbarProps {
     isAdmin?: boolean;
 }
 
+// Helper for Devanagari numerals
+const toNepaliDigits = (num: number) => String(num).replace(/\d/g, d => '०१२३४५६७८९'[Number(d)]);
+
 export default function Navbar({ isAdmin = false }: NavbarProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
     const navigate = useNavigate();
+
     const [searchParams] = useSearchParams();
     const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
-    const [categories, setCategories] = useState<string[]>([]); // State for categories
+    const [categories, setCategories] = useState<string[]>([]);
+    const [showSearch, setShowSearch] = useState(false);
+
+    // Dates
+    const [currentDate, setCurrentDate] = useState('');
+    const [nepaliDateStr, setNepaliDateStr] = useState('');
+
+    useEffect(() => {
+        // Dynamic English Date
+        const date = new Date();
+        const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        setCurrentDate(date.toLocaleDateString('en-US', options));
+
+        // Dynamic Nepali Date
+        try {
+            const bs = new NepaliDate(date);
+            const months = ['बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ', 'असोज', 'कार्तिक', 'मंसिर', 'पुष', 'माघ', 'फागुन', 'चैत'];
+            const days = ['आइतबार', 'सोमबार', 'मंगलबार', 'बुधबार', 'बिहीबार', 'शुक्रबार', 'शनिबार'];
+
+            // Adjust for library specific indexing if needed. Assuming 0-indexed month/day
+            const dStr = `${toNepaliDigits(bs.getDate())} ${months[bs.getMonth()]} ${toNepaliDigits(bs.getYear())}, ${days[bs.getDay()]}`;
+            setNepaliDateStr(dStr);
+        } catch (e) {
+            console.error("Nepali Date Error", e);
+            setNepaliDateStr("२२ पौष २०८२, मंगलबार"); // Fallback
+        }
+    }, []);
 
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme);
@@ -24,13 +57,11 @@ export default function Navbar({ isAdmin = false }: NavbarProps) {
     }, [theme]);
 
     useEffect(() => {
-        // Fetch categories
         api.getCategories()
             .then((data: { name: string }[]) => setCategories(data.map(c => c.name)))
-            .catch(() => setCategories(CATEGORIES)); // Fallback
+            .catch(() => setCategories(CATEGORIES));
     }, []);
 
-    // Sync local state with URL param
     useEffect(() => {
         setSearchTerm(searchParams.get('search') || '');
     }, [searchParams]);
@@ -39,10 +70,8 @@ export default function Navbar({ isAdmin = false }: NavbarProps) {
         if (e.key === 'Enter') {
             if (searchTerm.trim()) {
                 navigate(`/?search=${encodeURIComponent(searchTerm.trim())}`);
-            } else {
-                navigate('/');
             }
-            setIsMenuOpen(false); // Close mobile menu if open
+            setShowSearch(false);
         }
     };
 
@@ -50,19 +79,55 @@ export default function Navbar({ isAdmin = false }: NavbarProps) {
         setTheme(prev => prev === 'light' ? 'dark' : 'light');
     };
 
+    const renderLogo = () => {
+        const parts = config.siteName.split(' ');
+        const firstWord = parts[0];
+        const rest = parts.slice(1).join(' ');
+        const logoSrc = theme === 'dark' ? '/everestedit_dark.png' : '/everestedit.png';
+
+        return (
+            <div className="main-logo" onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <img src={logoSrc} alt="Logo" style={{ height: '64px', width: 'auto' }} />
+                <span>
+                    <span className="logo-accent">{firstWord}</span> {rest}
+                </span>
+            </div>
+        );
+    };
+
     return (
         <header className="navbar-wrapper">
-            <nav className="navbar">
-                <div className="container navbar-container">
-                    <div className="navbar-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-                        <span className="logo-accent">खबर</span> मञ्च
-                        <div className="navbar-dot"></div>
+            {/* Top Branding Section */}
+            <div className="branding-section">
+                {renderLogo()}
+                <div className="date-line">
+                    <span>{nepaliDateStr || "..."}</span>
+                    <span style={{ margin: '0 8px', color: '#cbd5e1' }}>|</span>
+                    <span>{currentDate}</span>
+                </div>
+            </div>
+
+            {/* Navigation Strip */}
+            <nav className="nav-strip">
+                <div className="container nav-container">
+                    {/* Mobile Menu Toggle */}
+                    <button
+                        className="mobile-menu-btn"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    >
+                        {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
+
+                    {/* Left Actions (Home) */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <button className="nav-icon-btn" onClick={() => navigate('/')} title="Home">
+                            <Home size={20} />
+                        </button>
                     </div>
 
-                    {/* Desktop Menu */}
+                    {/* Centered/Main Links */}
                     {!isAdmin && (
-                        <ul className="navbar-links">
-                            <li><a href="/" className={(!searchParams.get('category') && !searchParams.get('search')) ? "active" : ""} onClick={(e) => { e.preventDefault(); navigate('/'); }}>Home</a></li>
+                        <ul className="nav-links">
                             {categories.map((cat) => (
                                 <li key={cat}>
                                     <a
@@ -77,44 +142,57 @@ export default function Navbar({ isAdmin = false }: NavbarProps) {
                         </ul>
                     )}
 
-                    <div className="navbar-actions">
-                        <button className="icon-btn" onClick={toggleTheme} aria-label="Toggle Theme">
+                    {/* Right Actions (Search & Theme) */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        {!isAdmin && (
+                            <div style={{ position: 'relative' }}>
+                                {showSearch ? (
+                                    <input
+                                        type="text"
+                                        placeholder="Search..."
+                                        autoFocus
+                                        onBlur={() => !searchTerm && setShowSearch(false)}
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        onKeyDown={handleSearch}
+                                        style={{
+                                            padding: '6px 12px',
+                                            borderRadius: '20px',
+                                            border: 'none',
+                                            outline: 'none',
+                                            fontSize: '0.9rem',
+                                            width: '200px'
+                                        }}
+                                    />
+                                ) : (
+                                    <button className="nav-icon-btn" onClick={() => setShowSearch(true)} title="Search">
+                                        <Search size={20} />
+                                    </button>
+                                )}
+                            </div>
+                        )}
+
+                        <button className="nav-icon-btn" onClick={toggleTheme} title="Toggle Theme">
                             {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
                         </button>
-                        <div className="search-box">
-                            <input
-                                type="text"
-                                placeholder="Search news..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                onKeyDown={handleSearch}
-                            />
-                            <Search className="search-icon" size={18} />
-                        </div>
-                        <button className="icon-btn user-btn" aria-label="User Profile">
-                            <User size={20} />
-                        </button>
-                        {!isAdmin && (
-                            <button
-                                className="icon-btn mobile-menu-btn"
-                                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                aria-label="Toggle menu"
-                            >
-                                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+
+                        {isAdmin && (
+                            <button className="nav-icon-btn" title="Admin Profile">
+                                <User size={20} />
                             </button>
                         )}
                     </div>
                 </div>
             </nav>
 
-            {/* Mobile Menu */}
-            {!isAdmin && (
-                <div className={`mobile-menu ${isMenuOpen ? 'open' : ''}`}>
-                    <ul className="mobile-links">
-                        <li><a href="/" onClick={(e) => { e.preventDefault(); navigate('/'); setIsMenuOpen(false); }}>Home</a></li>
+            {/* Mobile Menu Dropdown */}
+            {isMenuOpen && (
+                <div className="mobile-menu open" style={{ top: 'auto', position: 'relative', boxShadow: 'none', background: '#1e3a8a', color: 'white' }}>
+                    <ul className="mobile-links" style={{ padding: '1rem' }}>
+                        <li><a href="/" onClick={() => setIsMenuOpen(false)} style={{ color: 'white' }}>Home</a></li>
                         {categories.map((cat) => (
                             <li key={cat}>
-                                <a href={`/?category=${cat}`} onClick={(e) => { e.preventDefault(); navigate(`/?category=${cat}`); setIsMenuOpen(false); }}>{cat}</a>
+                                <a href={`/?category=${cat}`} onClick={() => setIsMenuOpen(false)} style={{ color: 'white' }}>{cat}</a>
                             </li>
                         ))}
                     </ul>

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
-import Footer from '../components/Footer';
+
 import NewsCard from '../components/NewsCard';
 import Sidebar from '../components/Sidebar';
 import type { Article } from '../data/mockData';
@@ -31,8 +30,13 @@ export default function Home() {
 
     return (
         <div className="home-page">
-            <Navbar />
-            <Hero />
+            <Hero
+                title={articles[0]?.title}
+                summary={articles[0]?.excerpt}
+                imageUrl={articles[0]?.imageUrl}
+                id={articles[0]?.id}
+                category={articles[0]?.category}
+            />
 
             <main className="container home-layout">
                 <section className="news-feed">
@@ -60,8 +64,6 @@ export default function Home() {
 
                 <Sidebar />
             </main>
-
-            <Footer />
         </div>
     );
 }

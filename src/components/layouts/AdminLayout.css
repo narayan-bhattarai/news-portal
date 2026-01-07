@@ -1,0 +1,118 @@
+/* Admin Layout specific styles */
+
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--bg-light, #f0f4f8);
+    color: var(--text-dark, #1e293b);
+    font-family: 'Inter', system-ui, sans-serif;
+}
+
+.admin-main {
+    margin-left: 250px;
+    flex: 1;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem;
+    transition: margin-left 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .admin-main {
+        margin-left: 0;
+    }
+}
+
+.user-profile-container {
+    position: relative;
+    z-index: 100;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.user-profile:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.profile-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 4px;
+    background: var(--surface-white, #ffffff);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    min-width: 140px;
+    width: auto;
+    overflow: hidden;
+    animation: fadeScale 0.2s ease-out;
+    padding: 6px;
+    background-color: white;
+}
+
+/* Dark mode support logic should ideally be global, but ensuring background is correct here */
+[data-theme='dark'] .profile-dropdown {
+    background-color: #1a2333;
+    border-color: #334155;
+    color: #f1f5f9;
+}
+
+@keyframes fadeScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 8px;
+    font-weight: 500;
+    color: inherit;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.dropdown-item:hover {
+    background: var(--hover-bg, #f1f5f9);
+}
+
+[data-theme='dark'] .dropdown-item:hover {
+    background: #334155;
+}
+
+.dropdown-item.logout {
+    color: #ef4444;
+}
+
+.dropdown-item.logout:hover {
+    background: #fef2f2;
+}
+
+[data-theme='dark'] .dropdown-item.logout:hover {
+    background: rgba(239, 68, 68, 0.15);
+}

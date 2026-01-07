@@ -1,0 +1,31 @@
+/* AdminSidebar.css - relies on Admin.css variables */
+
+.sidebar-logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.85rem 1rem;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 12px;
+    font-family: inherit;
+}
+
+.sidebar-logout-btn:hover {
+    background: var(--hover-bg);
+    color: #ef4444;
+    /* Red for logout to indicate valid action, or standard primary? User didn't specify, but red is standard for logout. */
+    transform: translateX(4px);
+}
+
+/* Dark Mode Overrides */
+:root[data-theme="dark"] .sidebar-logout-btn:hover {
+    background: #334155;
+    color: #ef4444;
+}

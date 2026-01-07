@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
 import { api } from '../services/api';
 import './Login.css';
 
@@ -9,24 +8,33 @@ export default function Login() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
+    const theme = localStorage.getItem('theme') || 'light';
+    const logoSrc = theme === 'dark' ? '/everestedit_dark.png' : '/everestedit.png';
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        console.log('Login form submitted for:', username);
 
         try {
             await api.login(username, password);
+            console.log('Login API returned success. Navigating to /admin...');
             navigate('/admin');
         } catch (err: any) {
-            setError(err.message || 'Login failed');
+            console.error('Login error caught in component:', err);
+            const msg = err.message || 'Login failed';
+            setError(msg);
+            alert(`Login Error: ${msg}`); // Explicit alert for user
         }
     };
 
     return (
         <div className="login-page">
-            <Navbar />
             <div className="login-container">
                 <div className="login-box">
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+                        <img src={logoSrc} alt="Logo" style={{ height: '100px', width: 'auto' }} />
+                    </div>
                     <h2>Admin Login</h2>
                     {error && <div className="error-message">{error}</div>}
                     <form onSubmit={handleLogin}>
@@ -50,7 +58,7 @@ export default function Login() {
                         </div>
                         <button type="submit" className="login-btn">Login</button>
                     </form>
-                    <p className="hint">Hint: admin / admin123</p>
+
                 </div>
             </div>
         </div>

@@ -8,6 +8,7 @@ export interface Article {
     imageUrl: string;
     content?: string;
     isTrending?: boolean;
+    publishedAt?: string;
 }
 
 export const ARTICLES: Article[] = [
