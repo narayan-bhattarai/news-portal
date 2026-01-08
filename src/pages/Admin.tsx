@@ -39,7 +39,7 @@ export default function Admin() {
     });
     const [uploading, setUploading] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editingId, setEditingId] = useState<number | null>(null);
     const [showArticleForm, setShowArticleForm] = useState(false);
 
     // --- Category State ---
@@ -170,10 +170,19 @@ export default function Admin() {
             }
 
             if (editingId) {
-                await api.updateArticle(editingId, { ...articleForm, id: editingId, imageUrl: finalImageUrl });
+                await api.updateArticle(editingId, {
+                    ...articleForm,
+                    id: editingId,
+                    imageUrl: finalImageUrl,
+                    publishedAt: new Date().toISOString() // Ensure required field is present
+                });
                 alert('Article updated successfully!');
             } else {
-                await api.createArticle({ ...articleForm, imageUrl: finalImageUrl });
+                await api.createArticle({
+                    ...articleForm,
+                    imageUrl: finalImageUrl,
+                    publishedAt: new Date().toISOString() // Ensure required field is present
+                });
                 alert('Article published successfully!');
             }
             handleCancelEdit();
@@ -208,7 +217,7 @@ export default function Admin() {
         setShowArticleForm(false);
     };
 
-    const handleDeleteArticle = async (id: string) => {
+    const handleDeleteArticle = async (id: number) => {
         if (confirm('Delete this article?')) {
             try {
                 await api.deleteArticle(id);

@@ -42,7 +42,7 @@ export default function Contact() {
                     });
                 } catch (e) {
                     // Fallback for plain HTML (legacy)
-                    setPageData(prev => ({ ...prev, title: data.title, body: data.body }));
+                    setPageData((prev: any) => ({ ...prev, title: data.title, body: data.body }));
                 }
             })
             .catch(err => console.error("Failed to load contact info", err));
