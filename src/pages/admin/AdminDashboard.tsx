@@ -7,18 +7,19 @@ import '../../pages/Admin.css'; // We'll keep sharing standard styles or refacto
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
 import Snackbar from '../../components/ui/Snackbar';
 import Editor from 'react-simple-wysiwyg';
+import { formatTimeAgo } from '../../utils/dateUtils';
 
 export default function AdminDashboard() {
     const [articles, setArticles] = useState<Article[]>([]);
     const [showArticleForm, setShowArticleForm] = useState(false);
-    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editingId, setEditingId] = useState<number | null>(null);
     const [uploading, setUploading] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string>('');
 
     // Modal State
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+    const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
     const [deleteTargetTitle, setDeleteTargetTitle] = useState<string>('');
 
     // Form State
@@ -108,7 +109,7 @@ export default function AdminDashboard() {
         setShowArticleForm(false);
     };
 
-    const initiateDelete = (id: string, title: string) => {
+    const initiateDelete = (id: number, title: string) => {
         setDeleteTargetId(id);
         setDeleteTargetTitle(title);
         setIsDeleteModalOpen(true);
@@ -136,10 +137,20 @@ export default function AdminDashboard() {
             }
 
             if (editingId) {
-                await api.updateArticle(editingId, { ...articleForm, id: editingId, imageUrl: finalImageUrl });
+                const existing = articles.find(a => a.id === editingId);
+                await api.updateArticle(editingId, {
+                    ...articleForm,
+                    id: editingId,
+                    imageUrl: finalImageUrl,
+                    publishedAt: existing?.publishedAt || new Date().toISOString()
+                });
                 showSnackbar('Article updated successfully!', 'success');
             } else {
-                await api.createArticle({ ...articleForm, imageUrl: finalImageUrl });
+                await api.createArticle({
+                    ...articleForm,
+                    imageUrl: finalImageUrl,
+                    publishedAt: new Date().toISOString()
+                });
                 showSnackbar('Article published successfully!', 'success');
             }
             handleCancelEdit();
@@ -153,7 +164,7 @@ export default function AdminDashboard() {
     return (
         <div className="admin-content">
             {!showArticleForm ? (
-                <div className="content-card" style={{ padding: '1.25rem' }}>
+                <div className="content-card" style={{ padding: '1.25rem', maxWidth: '1200px' }}>
                     <div className="card-header" style={{ marginBottom: '1rem', alignItems: 'center' }}>
                         <div>
                             <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>Article Management</h3>
@@ -188,10 +199,7 @@ export default function AdminDashboard() {
                                             </td>
                                             <td><span className="badge badge-gray">{a.category}</span></td>
                                             <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-                                                {a.publishedAt ? new Date(a.publishedAt).toLocaleString('en-US', {
-                                                    year: 'numeric', month: 'short', day: 'numeric',
-                                                    hour: '2-digit', minute: '2-digit'
-                                                }) : a.timeAgo}
+                                                {a.publishedAt ? formatTimeAgo(a.publishedAt) : 'N/A'}
                                             </td>
                                             <td style={{ fontSize: '0.85rem' }}>{a.author}</td>
                                             <td>
@@ -220,7 +228,6 @@ export default function AdminDashboard() {
                 <div className="content-card article-form-card">
                     <div className="card-header">
                         <h3>{editingId ? 'Edit Article' : 'Create New Article'}</h3>
-                        <button className="secondary-btn" onClick={handleCancelEdit}>Cancel</button>
                     </div>
                     <form onSubmit={handleArticleSubmit} className="modern-form">
                         <div className="form-grid">
@@ -249,7 +256,7 @@ export default function AdminDashboard() {
 
                             <div className="form-group">
                                 <label>Excerpt</label>
-                                <textarea value={articleForm.excerpt} onChange={e => setArticleForm({ ...articleForm, excerpt: e.target.value })} rows={3} placeholder="Short summary..." required />
+                                <textarea value={articleForm.excerpt} onChange={e => setArticleForm({ ...articleForm, excerpt: e.target.value })} rows={3} placeholder="Short summary..." required style={{ resize: 'vertical' }} />
                             </div>
 
                             <div className="form-group span-2">
@@ -278,7 +285,6 @@ export default function AdminDashboard() {
                                         <button type="button" onClick={() => { setPreviewUrl(''); setSelectedFile(null); setArticleForm({ ...articleForm, imageUrl: '' }) }} className="remove-image"><X size={14} /></button>
                                     </div>
                                 )}
-                                <input type="text" placeholder="Or enter Image URL..." value={articleForm.imageUrl} onChange={e => { setArticleForm({ ...articleForm, imageUrl: e.target.value }); setPreviewUrl(e.target.value) }} className="url-input" />
                             </div>
 
                             <div className="form-group checkbox-group">
@@ -290,6 +296,7 @@ export default function AdminDashboard() {
                         </div>
 
                         <div className="form-actions">
+                            <button type="button" className="secondary-btn" onClick={handleCancelEdit}>Cancel</button>
                             <button type="submit" className="primary-btn" disabled={uploading}>
                                 {uploading ? 'Processing...' : <><Save size={18} /> {editingId ? 'Update Article' : 'Publish Article'}</>}
                             </button>
@@ -317,27 +324,113 @@ export default function AdminDashboard() {
 
             <style>{`
                 .article-form-card {
-                    overflow-y: auto;
-                    max-height: calc(100vh - 120px);
-                    padding-right: 8px;
+                    padding: 0;
                     display: flex;
                     flex-direction: column;
+                    overflow: hidden;
+                    max-height: calc(100vh - 160px);
+                    gap: 0;
                 }
-                .article-form-card::-webkit-scrollbar {
-                    width: 6px;
+                .article-form-card .card-header {
+                    padding: 1.25rem 2rem;
+                    border-bottom: 1px solid var(--border-color);
+                    background: var(--surface-white);
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
                 }
-                .article-form-card::-webkit-scrollbar-thumb {
-                    background-color: var(--border-color);
-                    border-radius: 4px;
+                :root[data-theme="dark"] .article-form-card .card-header {
+                    background: #1a2333;
+                    border-color: #334155;
+                }
+                .article-form-card .modern-form {
+                    padding: 2rem;
+                    overflow-y: auto;
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.5rem;
+                }
+                .modern-form label {
+                    color: var(--text-dark);
+                    font-weight: 600;
+                }
+                :root[data-theme="dark"] .modern-form label {
+                    color: #f1f5f9;
                 }
                 .article-form-card .form-actions {
-                    padding-top: 1rem;
-                    background: var(--surface-white); /* Ensure background covers content when scrolling */
-                    position: sticky;
-                    bottom: 0;
-                    z-index: 10;
+                    padding: 1.25rem 2rem;
                     border-top: 1px solid var(--border-color);
-                    margin-top: auto; /* Push to bottom if content is short */
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: 1rem;
+                    background: #f8fafc;
+                }
+                :root[data-theme="dark"] .article-form-card .form-actions {
+                    background: #1a2333;
+                    border-color: #334155;
+                }
+                /* Editor Dark Mode */
+                :root[data-theme="dark"] .rsw-editor {
+                    background: #1e293b !important;
+                    border-color: #334155 !important;
+                    color: white !important;
+                }
+                :root[data-theme="dark"] .rsw-toolbar {
+                    background: #334155 !important;
+                    border-bottom-color: #475569 !important;
+                }
+                :root[data-theme="dark"] .rsw-btn {
+                    color: #cbd5e1 !important;
+                }
+                :root[data-theme="dark"] .rsw-btn:hover {
+                    background: #475569 !important;
+                    color: white !important;
+                }
+                .article-form-card .card-header h3 {
+                    margin: 0;
+                    font-size: 1.25rem;
+                }
+                .image-preview {
+                    margin: 0.5rem 0;
+                    border-radius: 12px;
+                    position: relative;
+                    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+                    border: 1px solid var(--border-color);
+                    background: var(--bg-light);
+                    width: fit-content;
+                }
+                .image-preview img {
+                    display: block;
+                    max-width: 100%;
+                    max-height: 200px;
+                    object-fit: contain;
+                    border-radius: 12px;
+                }
+                .remove-image {
+                    position: absolute;
+                    top: -10px;
+                    right: -10px;
+                    background: #ef4444;
+                    color: white;
+                    border: 2px solid white;
+                    border-radius: 50%;
+                    width: 24px;
+                    height: 24px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 5;
+                    transition: transform 0.2s;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                }
+                .remove-image:hover {
+                    transform: scale(1.1);
+                    background: #dc2626;
+                }
+                .checkbox-group {
+                    padding: 0.75rem 0;
                 }
             `}</style>
         </div>

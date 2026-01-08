@@ -94,10 +94,10 @@ export default function AdminPages() {
 
     return (
         <div className="admin-content">
-            <div className="content-card admin-pages-content compact" style={{ maxWidth: '900px' }}>
+            <div className="content-card admin-pages-content">
                 <div className="card-header">
                     <div>
-                        <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>Edit Page Content</h3>
+                        <h3 className="section-title">Edit Page Content</h3>
                     </div>
                     <div className="select-wrapper">
                         <select value={pageSlug} onChange={e => setPageSlug(e.target.value)} className="page-select">
@@ -116,6 +116,7 @@ export default function AdminPages() {
                             value={pageContent.title}
                             onChange={e => setPageContent({ ...pageContent, title: e.target.value })}
                             placeholder="Enter page title"
+                            className="title-input"
                         />
                     </div>
 
@@ -125,94 +126,86 @@ export default function AdminPages() {
                             <textarea
                                 value={pageContent.body}
                                 onChange={e => setPageContent({ ...pageContent, body: e.target.value })}
-                                rows={pageSlug === 'contact-info' ? 5 : 12}
+                                rows={pageSlug === 'contact-info' ? 8 : 20}
                                 className="code-editor"
                                 placeholder="<div>Content goes here...</div>"
-                                style={{ resize: 'vertical', minHeight: pageSlug === 'contact-info' ? '120px' : '300px' }}
                             />
                         </div>
                     )}
 
                     {pageSlug === 'contact-info' && (
-                        <>
-                            <div className="compact-section" style={{ marginTop: '0.5rem' }}>
-                                <h4 style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Contact Details</h4>
-                                <div className="form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
+                        <div className="contact-info-grid">
+                            <div className="compact-section">
+                                <h4>Contact Details</h4>
+                                <div className="form-row-grid">
                                     <div className="form-group">
-                                        <label style={{ fontSize: '0.75rem' }}><MapPin size={12} /> Address</label>
+                                        <label><MapPin size={16} /> Address</label>
                                         <input
                                             value={contactDetails.address}
                                             onChange={e => setContactDetails({ ...contactDetails, address: e.target.value })}
                                             placeholder="City, Country"
-                                            style={{ padding: '0.4rem', fontSize: '0.9rem' }}
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <label style={{ fontSize: '0.75rem' }}><Phone size={12} /> Phone</label>
+                                        <label><Phone size={16} /> Phone</label>
                                         <input
                                             value={contactDetails.phone}
                                             onChange={e => setContactDetails({ ...contactDetails, phone: e.target.value })}
                                             placeholder="+977-..."
-                                            style={{ padding: '0.4rem', fontSize: '0.9rem' }}
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <label style={{ fontSize: '0.75rem' }}><Mail size={12} /> Email</label>
+                                        <label><Mail size={16} /> Email</label>
                                         <input
                                             value={contactDetails.email}
                                             onChange={e => setContactDetails({ ...contactDetails, email: e.target.value })}
                                             placeholder="info@example.com"
-                                            style={{ padding: '0.4rem', fontSize: '0.9rem' }}
                                         />
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="compact-section" style={{ marginTop: '1rem' }}>
-                                <h4 style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Social Links</h4>
-                                <div className="form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
+                            <div className="compact-section" style={{ marginTop: '2rem' }}>
+                                <h4>Social Links</h4>
+                                <div className="form-row-grid">
                                     <div className="form-group">
-                                        <label style={{ fontSize: '0.75rem' }}><Facebook size={12} /> Facebook</label>
+                                        <label><Facebook size={16} /> Facebook</label>
                                         <input
                                             value={contactDetails.facebook}
                                             onChange={e => setContactDetails({ ...contactDetails, facebook: e.target.value })}
                                             placeholder="URL"
-                                            style={{ padding: '0.4rem', fontSize: '0.9rem' }}
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <label style={{ fontSize: '0.75rem' }}><Twitter size={12} /> Twitter</label>
+                                        <label><Twitter size={16} /> Twitter</label>
                                         <input
                                             value={contactDetails.twitter}
                                             onChange={e => setContactDetails({ ...contactDetails, twitter: e.target.value })}
                                             placeholder="URL"
-                                            style={{ padding: '0.4rem', fontSize: '0.9rem' }}
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <label style={{ fontSize: '0.75rem' }}><Instagram size={12} /> Instagram</label>
+                                        <label><Instagram size={16} /> Instagram</label>
                                         <input
                                             value={contactDetails.instagram}
                                             onChange={e => setContactDetails({ ...contactDetails, instagram: e.target.value })}
                                             placeholder="URL"
-                                            style={{ padding: '0.4rem', fontSize: '0.9rem' }}
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <label style={{ fontSize: '0.75rem' }}><Linkedin size={12} /> LinkedIn</label>
+                                        <label><Linkedin size={16} /> LinkedIn</label>
                                         <input
                                             value={contactDetails.linkedin}
                                             onChange={e => setContactDetails({ ...contactDetails, linkedin: e.target.value })}
                                             placeholder="URL"
-                                            style={{ padding: '0.4rem', fontSize: '0.9rem' }}
                                         />
                                     </div>
                                 </div>
                             </div>
-                        </>
+                        </div>
                     )}
 
-                    <div className="form-actions" style={{ marginTop: '1.5rem', marginBottom: '1rem' }}>
+                    <div className="form-actions">
                         <button type="submit" className="primary-btn"><Save size={18} /> Save Changes</button>
                     </div>
                 </form>
@@ -226,18 +219,96 @@ export default function AdminPages() {
             />
 
             <style>{`
-                .form-group label {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    gap: 4px;
+                .admin-pages-content {
+                    padding-bottom: 4rem;
                 }
 
-                .admin-pages-content {
-                    overflow-y: auto;
-                    max-height: calc(100vh - 200px); /* Adjusted for better visibility */
-                    padding-right: 8px;
-                    padding-bottom: 3rem; /* Increased bottom padding */
+                .admin-pages-content.content-card {
+                    max-width: 1200px !important;
+                    width: 100%;
+                    border: 1px solid var(--border-color);
+                    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+
+                .section-title {
+                    margin: 0;
+                    font-size: 1.5rem;
+                    font-weight: 800;
+                    color: var(--text-dark);
+                }
+
+                :root[data-theme="dark"] .section-title {
+                    color: white;
+                }
+
+                .form-row-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                    gap: 1.5rem;
+                    margin-top: 1rem;
+                }
+
+                .title-input {
+                    font-size: 1.2rem !important;
+                    font-weight: 600;
+                    padding: 1rem !important;
+                }
+
+                .form-group label {
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    gap: 10px;
+                    font-weight: 600;
+                    margin-bottom: 8px;
+                    color: var(--text-muted);
+                }
+
+                :root[data-theme="dark"] .form-group label {
+                    color: #94a3b8;
+                }
+
+                .compact-section h4 {
+                    font-weight: 700;
+                    border-bottom: 2px solid var(--border-color);
+                    padding-bottom: 12px;
+                    margin-top: 2.5rem;
+                    margin-bottom: 1rem;
+                    color: var(--primary-color);
+                    text-transform: uppercase;
+                    font-size: 0.85rem;
+                    letter-spacing: 0.05em;
+                }
+
+                :root[data-theme="dark"] .compact-section h4 {
+                    border-color: #334155;
+                }
+
+                .code-editor {
+                    min-height: 500px !important;
+                    font-family: 'Fira Code', 'Cascadia Code', 'Source Code Pro', monospace !important;
+                    line-height: 1.6;
+                    tab-size: 4;
+                }
+
+                :root[data-theme="dark"] .code-editor {
+                    background-color: #0f172a !important;
+                    color: #7dd3fc !important;
+                    border-color: #334155 !important;
+                }
+
+                .form-actions {
+                    margin-top: 3rem;
+                    padding-top: 2rem;
+                    border-top: 1px solid var(--border-color);
+                    display: flex;
+                    justify-content: flex-end;
+                }
+
+                :root[data-theme="dark"] .form-actions {
+                    border-color: #334155;
                 }
             `}</style>
         </div>

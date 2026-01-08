@@ -23,7 +23,7 @@ export default function NewsCard({ article, compact = false }: NewsCardProps) {
 
                 <div className="news-card-meta">
                     <span className="news-card-time">
-                        <Clock size={14} /> {article.publishedAt ? formatTimeAgo(article.publishedAt) : article.timeAgo}
+                        <Clock size={14} /> {formatTimeAgo(article.publishedAt)}
                     </span>
                     {!compact && (
                         <span className="news-card-author">by {article.author}</span>

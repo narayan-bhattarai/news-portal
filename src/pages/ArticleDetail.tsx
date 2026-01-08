@@ -16,7 +16,7 @@ export default function ArticleDetail() {
 
     useEffect(() => {
         if (id) {
-            api.getArticleById(id)
+            api.getArticleById(parseInt(id, 10))
                 .then(data => {
                     setArticle(data);
                     let dateToUse = new Date();

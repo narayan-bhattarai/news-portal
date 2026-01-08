@@ -128,7 +128,7 @@ export default function AdminCategories() {
     return (
         <div className="admin-content">
             <div className="content-grid" style={{ gridTemplateColumns: '1fr' }}>
-                <div className="content-card compact" style={{ maxWidth: '850px' }}>
+                <div className="content-card compact" style={{ maxWidth: '1000px' }}>
                     <div className="card-header">
                         <div>
                             <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>Existing Categories</h3>

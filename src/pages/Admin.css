@@ -106,7 +106,8 @@
 .admin-main {
     margin-left: var(--sidebar-width);
     flex: 1;
-    padding: 2rem;
+    padding: 1rem 2rem 2rem 2rem;
+    /* Reduced top padding */
 }
 
 /* User management grid moved to bottom for specificity override */
@@ -224,8 +225,8 @@
     border-radius: 12px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     margin-bottom: 2rem;
-    margin-top: 1rem;
-    /* Reduced top margin per user request */
+    margin-top: 0.5rem;
+    /* Further reduced gap */
 }
 
 

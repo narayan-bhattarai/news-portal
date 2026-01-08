@@ -53,7 +53,7 @@ export const api = {
         return Array.isArray(data) ? data : [];
     },
 
-    getArticleById: async (id: string): Promise<Article> => {
+    getArticleById: async (id: number): Promise<Article> => {
         if (USE_MOCK) {
             await new Promise(resolve => setTimeout(resolve, 300));
             const article = ARTICLES.find(a => a.id === id);
@@ -130,13 +130,13 @@ export const api = {
         return !!localStorage.getItem('authToken');
     },
 
-    createArticle: async (article: Omit<Article, 'id' | 'timeAgo'>): Promise<Article> => {
+    createArticle: async (article: Omit<Article, 'id'>): Promise<Article> => {
         if (USE_MOCK) {
             await new Promise(resolve => setTimeout(resolve, 600));
-            const newArticle = {
+            const newArticle: Article = {
                 ...article,
-                id: Math.random().toString(36).substr(2, 9),
-                timeAgo: 'Just now'
+                id: Math.floor(Math.random() * 10000),
+                publishedAt: new Date().toISOString()
             };
             ARTICLES.unshift(newArticle); // Update local mock cache (in memory only)
             return newArticle;
@@ -155,7 +155,7 @@ export const api = {
         return response.json();
     },
 
-    updateArticle: async (id: string, article: Omit<Article, 'timeAgo'>): Promise<void> => {
+    updateArticle: async (id: number, article: Article): Promise<void> => {
         if (USE_MOCK) {
             await new Promise(resolve => setTimeout(resolve, 600));
             return;
@@ -173,7 +173,7 @@ export const api = {
         if (!response.ok) throw new Error('Failed to update article');
     },
 
-    deleteArticle: async (id: string): Promise<void> => {
+    deleteArticle: async (id: number): Promise<void> => {
         if (USE_MOCK) {
             await new Promise(resolve => setTimeout(resolve, 400));
             return;

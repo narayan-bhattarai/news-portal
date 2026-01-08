@@ -6,7 +6,7 @@ export interface AppConfig {
 }
 
 export let config: AppConfig = {
-    backendUrl: "http://localhost:5200",
+    backendUrl: "https://news-portal-backend-og64.onrender.com",
     siteName: "The Everest Edit",
     siteTitle: "The Everest Edit | The Height of Truth",
     favicon: "/vite.svg"

@@ -3,6 +3,7 @@ import './Sidebar.css';
 import type { Article } from '../data/mockData';
 import NewsCard from './NewsCard';
 import { api } from '../services/api';
+import { formatTimeAgo } from '../utils/dateUtils';
 
 export default function Sidebar() {
     const [trending, setTrending] = useState<Article[]>([]);
@@ -27,7 +28,7 @@ export default function Sidebar() {
                             <span className="trending-number">{index + 1}</span>
                             <div className="trending-content">
                                 <h4 className="trending-title">{article.title}</h4>
-                                <div className="trending-meta">{article.timeAgo} • {article.category}</div>
+                                <div className="trending-meta">{formatTimeAgo(article.publishedAt)} • {article.category}</div>
                             </div>
                         </div>
                     ))}
